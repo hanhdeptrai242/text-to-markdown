@@ -1,38 +1,189 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/128/17591/17591043.png">
     <title>Text to Markdown (Table Support)</title>
     <style>
-        :root { --primary: #2563eb; --danger: #ef4444; --bg: #f8fafc; --border: #e2e8f0; --text: #334155; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 20px; height: 100vh; display: flex; flex-direction: column; }
-        .header { text-align: center; margin-bottom: 15px; }
-        .header h2 { font-weight: 700; color: #1e293b; }
-        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; min-height: 0; }
-        .panel { background: white; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .panel-header { padding: 10px 15px; background: #fff; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: #64748b; }
-        .mode-switch button { padding: 4px 12px; border: 1px solid #e2e8f0; background: #f1f5f9; border-radius: 4px; cursor: pointer; color: #64748b; transition: 0.2s; }
-        .mode-switch button.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .editor-area { flex: 1; position: relative; overflow: hidden; }
-        textarea, #wysiwyg { width: 100%; height: 100%; border: none; padding: 16px; resize: none; outline: none; font-size: 14px; line-height: 1.6; overflow-y: auto; }
-        
+        :root {
+            --primary: #2563eb;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+            --text: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .header h2 {
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .panel-header {
+            padding: 10px 15px;
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .mode-switch button {
+            padding: 4px 12px;
+            border: 1px solid #e2e8f0;
+            background: #f1f5f9;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #64748b;
+            transition: 0.2s;
+        }
+
+        .mode-switch button.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .editor-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        textarea,
+        #wysiwyg {
+            width: 100%;
+            height: 100%;
+            border: none;
+            padding: 16px;
+            resize: none;
+            outline: none;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-y: auto;
+        }
+
         /* Font Monospace để nhìn Table thẳng hàng */
-        #html-input, #md-output { font-family: 'Consolas', 'Monaco', monospace; background: #f8fafc; color: #334155; white-space: pre; overflow-x: auto; }
-        #html-input { display: none; white-space: pre-wrap;}
+        #html-input,
+        #md-input,
+        #md-output {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #f8fafc;
+            color: #334155;
+            white-space: pre;
+            overflow-x: auto;
+        }
 
-        .footer { padding: 12px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; background: #fff; }
-        .btn { padding: 10px 20px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: #1d4ed8; }
-        .btn-danger { background: white; border: 1px solid var(--danger); color: var(--danger); }
-        .btn-danger:hover { background: var(--danger); color: white; }
+        #html-input {
+            display: none;
+            white-space: pre-wrap;
+        }
 
-        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } body { height: auto; } .panel { height: 500px; margin-bottom: 20px; } }
+        #md-input {
+            display: none;
+            white-space: pre-wrap;
+        }
+
+        .footer {
+            padding: 12px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #fff;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-danger {
+            background: white;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                height: auto;
+            }
+
+            .panel {
+                height: 500px;
+                margin-bottom: 20px;
+            }
+        }
     </style>
 </head>
+
 <body>
 
     <div class="header">
@@ -47,11 +198,15 @@
                 <div class="mode-switch">
                     <button class="active" onclick="setMode('wysiwyg', this)">Giao diện</button>
                     <button onclick="setMode('html', this)">HTML Code</button>
+                    <button onclick="setMode('markdown', this)">Làm đẹp MD</button>
                 </div>
             </div>
             <div class="editor-area">
-                <div id="wysiwyg" contenteditable="true" oninput="convert()" placeholder="Paste table here..."></div>
-                <textarea id="html-input" oninput="convert()" placeholder="Paste HTML code here..."></textarea>
+                <div id="wysiwyg" contenteditable="true" oninput="convert()" placeholder="Paste nội dung vào đây...">
+                </div>
+                <textarea id="html-input" oninput="convert()" placeholder="Paste HTML code vào đây..."></textarea>
+                <textarea id="md-input" oninput="convert()"
+                    placeholder="Paste Markdown cũ vào đây để làm đẹp..."></textarea>
             </div>
         </div>
 
@@ -74,20 +229,27 @@
         let mode = 'wysiwyg';
         const wysiwyg = document.getElementById('wysiwyg');
         const htmlInput = document.getElementById('html-input');
+        const mdInput = document.getElementById('md-input');
         const output = document.getElementById('md-output');
 
         function setMode(m, btn) {
             mode = m;
             document.querySelectorAll('.mode-switch button').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+
+            // Ẩn tất cả input
+            wysiwyg.style.display = 'none';
+            htmlInput.style.display = 'none';
+            mdInput.style.display = 'none';
+
             if (m === 'wysiwyg') {
                 wysiwyg.style.display = 'block';
-                htmlInput.style.display = 'none';
                 wysiwyg.innerHTML = htmlInput.value;
-            } else {
-                wysiwyg.style.display = 'none';
+            } else if (m === 'html') {
                 htmlInput.style.display = 'block';
                 htmlInput.value = wysiwyg.innerHTML;
+            } else if (m === 'markdown') {
+                mdInput.style.display = 'block';
             }
             convert();
         }
@@ -96,14 +258,23 @@
             if (confirm('Bạn có chắc chắn muốn xóa toàn bộ nội dung không?')) {
                 wysiwyg.innerHTML = '';
                 htmlInput.value = '';
+                mdInput.value = '';
                 output.value = '';
-                if (mode === 'wysiwyg') wysiwyg.focus(); else htmlInput.focus();
+                if (mode === 'wysiwyg') wysiwyg.focus();
+                else if (mode === 'html') htmlInput.focus();
+                else mdInput.focus();
             }
         }
 
         function convert() {
-            let html = mode === 'wysiwyg' ? wysiwyg.innerHTML : htmlInput.value;
-            output.value = htmlToMarkdownRecursive(html);
+            if (mode === 'markdown') {
+                // Chế độ Làm đẹp MD → dùng engine beautify
+                output.value = beautifyMarkdown(mdInput.value);
+            } else {
+                // Chế độ HTML → dùng engine chuyển đổi
+                let html = mode === 'wysiwyg' ? wysiwyg.innerHTML : htmlInput.value;
+                output.value = htmlToMarkdownRecursive(html);
+            }
         }
 
         function copyMd() {
@@ -115,44 +286,89 @@
             setTimeout(() => btn.innerHTML = originalText, 2000);
         }
 
-        // === LOGIC XỬ LÝ CHÍNH ===
+        // ============================================================
+        // === ENGINE CHUYỂN ĐỔI HTML → MARKDOWN (Nâng cấp v2) ===
+        // ============================================================
         function htmlToMarkdownRecursive(html) {
             if (!html) return '';
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
-            doc.body.querySelectorAll('script, style, link, meta, .anchorjs-link').forEach(e => e.remove());
 
-            // 1. Hàm xử lý Table riêng biệt
+            // ── BƯỚC 0: Xóa các phần tử rác trước khi xử lý ──
+            doc.body.querySelectorAll([
+                // Thẻ meta / styling
+                'script', 'style', 'link', 'meta', 'noscript', 'iframe',
+                // Anchor links (AnchorJS, VuePress header-anchor)
+                '.anchorjs-link', '.header-anchor',
+                // Line numbers trong code block (VuePress/VitePress/Prism)
+                '.line-numbers-wrapper', '.line-numbers', '.line-number',
+                // Screen reader only text ("opens new window"...)
+                '.sr-only',
+                // Navigation phân trang (← prev | next →)
+                '.page-nav', '.page-edit',
+                // Các phần tử SVG icon thường đi kèm link ngoài
+                '.icon.outbound',
+                // Copy button trong code block
+                '.code-copy-btn', '.copy-code-btn',
+            ].join(', ')).forEach(e => e.remove());
+
+            // ── BƯỚC 1: Detect ngôn ngữ cho code block ──
+            function detectLang(preNode) {
+                // Lấy tất cả classes từ <pre>, <code>, và parent <div>
+                const sources = [preNode, preNode.querySelector('code'), preNode.parentElement].filter(Boolean);
+                for (const el of sources) {
+                    const classes = Array.from(el.classList || []);
+                    for (const cls of classes) {
+                        // Nhận dạng pattern: language-xxx, lang-xxx, highlight-xxx
+                        const match = cls.match(/^(?:language|lang|highlight)-(\w+)$/);
+                        if (match) return match[1];
+                    }
+                }
+                return '';
+            }
+
+            // ── BƯỚC 2: Xử lý Table riêng biệt ──
             function convertTable(tableNode) {
                 let rows = Array.from(tableNode.querySelectorAll('tr'));
                 if (rows.length === 0) return '';
 
                 let mdTable = '\n';
-                
-                // Lấy số lượng cột max để vẽ header cho chuẩn
+
+                // Lấy số lượng cột max
                 let maxCols = 0;
                 rows.forEach(row => {
                     const cells = row.querySelectorAll('td, th');
                     if (cells.length > maxCols) maxCols = cells.length;
                 });
 
-                // Xử lý từng hàng
                 rows.forEach((row, index) => {
                     let cells = Array.from(row.querySelectorAll('td, th'));
-                    
-                    // Map nội dung cell và clean newlines
+
+                    // Padding thêm cell rỗng nếu hàng thiếu cột
+                    while (cells.length < maxCols) {
+                        const emptyTd = doc.createElement('td');
+                        cells.push(emptyTd);
+                    }
+
                     let rowContent = cells.map(cell => {
-                        // Dùng hàm walk để parse nội dung bên trong cell (giữ bold, italic, link...)
                         let content = walk(cell).trim();
-                        // Quan trọng: Thay thế | thành \| và bỏ xuống dòng để không vỡ table
                         return content.replace(/\|/g, '\\|').replace(/\n/g, ' ');
                     }).join(' | ');
 
                     mdTable += `| ${rowContent} |\n`;
 
-                    // Nếu là hàng đầu tiên, thêm dòng phân cách |---|---|
+                    // Dòng phân cách sau header
                     if (index === 0) {
-                        const separator = Array(cells.length).fill('---').join(' | ');
+                        const separator = cells.map(cell => {
+                            // Detect alignment từ style
+                            const align = (cell.getAttribute('style') || '').match(/text-align:\s*(left|center|right)/i);
+                            if (align) {
+                                const a = align[1].toLowerCase();
+                                if (a === 'center') return ':---:';
+                                if (a === 'right') return '---:';
+                            }
+                            return '---';
+                        }).join(' | ');
                         mdTable += `| ${separator} |\n`;
                     }
                 });
@@ -160,69 +376,187 @@
                 return mdTable + '\n';
             }
 
-            // 2. Hàm đệ quy chính (Walk)
+            // ── BƯỚC 3: Hàm đệ quy chính (Walk) ──
             function walk(node, listType = null, indent = 0) {
                 let result = '';
 
                 node.childNodes.forEach(child => {
-                    if (child.nodeType === 3) { // TEXT NODE
+                    // ─── TEXT NODE ───
+                    if (child.nodeType === 3) {
                         let text = child.textContent;
                         text = text.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ');
                         result += text;
-                    } 
-                    else if (child.nodeType === 1) { // ELEMENT
-                        const tag = child.tagName.toLowerCase();
-                        
-                        // Nếu gặp Table -> Gọi hàm xử lý riêng
-                        if (tag === 'table') {
-                            result += convertTable(child);
-                            return; // Dừng xử lý con của table ở loop này
-                        }
-                        
-                        // Nếu gặp thead/tbody/tfoot -> bỏ qua thẻ, chỉ duyệt con
-                        if (['thead', 'tbody', 'tfoot'].includes(tag)) {
-                            result += walk(child, listType, indent);
-                            return;
-                        }
+                        return;
+                    }
 
-                        // Xử lý List Indent
-                        let nextIndent = indent;
-                        if ((tag === 'ul' || tag === 'ol') && listType !== null) nextIndent = indent + 1;
+                    // ─── ELEMENT NODE ───
+                    if (child.nodeType !== 1) return;
 
-                        let inner = walk(child, tag === 'ul' || tag === 'ol' ? tag : listType, nextIndent);
+                    const tag = child.tagName.toLowerCase();
 
-                        switch (tag) {
-                            case 'h1': result += `\n# ${inner.trim()}\n\n`; break;
-                            case 'h2': result += `\n## ${inner.trim()}\n\n`; break;
-                            case 'h3': result += `\n### ${inner.trim()}\n\n`; break;
-                            case 'h4': result += `\n#### ${inner.trim()}\n\n`; break;
-                            
-                            case 'strong': case 'b': result += `**${inner.trim()}**`; break;
-                            case 'em': case 'i': result += `*${inner.trim()}*`; break;
-                            case 'code': result += `\`${inner}\``; break;
-                            
-                            case 'a': 
-                                if (inner.trim()) result += `[${inner.trim()}](${child.getAttribute('href')||'#'})`; 
-                                break;
-                            case 'img': 
-                                result += `![${child.getAttribute('alt')||''}](${child.getAttribute('src')||''})`; 
-                                break;
+                    // Skip các phần tử ẩn (display:none, hidden)
+                    if (child.hidden || child.getAttribute('aria-hidden') === 'true') return;
 
-                            case 'ul': case 'ol': result += `\n${inner}\n`; break;
-                            case 'li':
-                                let spacing = '    '.repeat(indent); 
-                                let bullet = (listType === 'ol') ? '1. ' : '- ';
-                                result += `\n${spacing}${bullet}${inner.trim()}`;
-                                break;
+                    // Table → xử lý riêng
+                    if (tag === 'table') {
+                        result += convertTable(child);
+                        return;
+                    }
 
-                            case 'p': case 'div': if (inner.trim()) result += `\n${inner.trim()}\n\n`; break;
-                            case 'br': result += '  \n'; break;
-                            case 'hr': result += '\n---\n'; break;
-                            case 'pre': result += `\n\`\`\`\n${child.textContent.trim()}\n\`\`\`\n\n`; break;
-                            
-                            // Tr và Td đã được xử lý trong hàm convertTable, nhưng nếu table vỡ cấu trúc thì fallback
-                            default: result += inner;
-                        }
+                    // thead/tbody/tfoot → bỏ thẻ wrapper, duyệt con
+                    if (['thead', 'tbody', 'tfoot'].includes(tag)) {
+                        result += walk(child, listType, indent);
+                        return;
+                    }
+
+                    // Xử lý List indent
+                    let nextIndent = indent;
+                    if ((tag === 'ul' || tag === 'ol') && listType !== null) nextIndent = indent + 1;
+
+                    let inner = walk(child, tag === 'ul' || tag === 'ol' ? tag : listType, nextIndent);
+
+                    switch (tag) {
+                        // ── HEADINGS ──
+                        case 'h1': result += `\n\n# ${inner.trim()}\n\n`; break;
+                        case 'h2': result += `\n\n## ${inner.trim()}\n\n`; break;
+                        case 'h3': result += `\n\n### ${inner.trim()}\n\n`; break;
+                        case 'h4': result += `\n\n#### ${inner.trim()}\n\n`; break;
+                        case 'h5': result += `\n\n##### ${inner.trim()}\n\n`; break;
+                        case 'h6': result += `\n\n###### ${inner.trim()}\n\n`; break;
+
+                        // ── INLINE FORMATTING ──
+                        case 'strong': case 'b':
+                            if (inner.trim()) result += `**${inner.trim()}**`;
+                            break;
+                        case 'em': case 'i':
+                            if (inner.trim()) result += `*${inner.trim()}*`;
+                            break;
+                        case 'del': case 's': case 'strike':
+                            if (inner.trim()) result += `~~${inner.trim()}~~`;
+                            break;
+                        case 'mark':
+                            if (inner.trim()) result += `==${inner.trim()}==`;
+                            break;
+                        case 'sub':
+                            if (inner.trim()) result += `~${inner.trim()}~`;
+                            break;
+                        case 'sup':
+                            if (inner.trim()) result += `^${inner.trim()}^`;
+                            break;
+                        case 'u':
+                            // Markdown không có underline native → dùng HTML
+                            if (inner.trim()) result += `<u>${inner.trim()}</u>`;
+                            break;
+                        case 'code':
+                            result += `\`${inner}\``;
+                            break;
+                        case 'kbd':
+                            result += `<kbd>${inner.trim()}</kbd>`;
+                            break;
+                        case 'abbr':
+                            result += inner;
+                            break;
+
+                        // ── LINKS & MEDIA ──
+                        case 'a':
+                            if (inner.trim()) {
+                                const href = child.getAttribute('href') || '#';
+                                result += `[${inner.trim()}](${href})`;
+                            }
+                            break;
+                        case 'img':
+                            result += `![${child.getAttribute('alt') || ''}](${child.getAttribute('src') || ''})`;
+                            break;
+                        case 'video': case 'audio': case 'source':
+                            // Giữ nguyên HTML cho media
+                            result += child.outerHTML;
+                            break;
+
+                        // ── LISTS ──
+                        case 'ul': case 'ol':
+                            result += `\n${inner}\n`;
+                            break;
+                        case 'li':
+                            let spacing = '    '.repeat(indent);
+                            let bullet = (listType === 'ol') ? '1. ' : '- ';
+                            result += `\n${spacing}${bullet}${inner.trim()}`;
+                            break;
+
+                        // ── BLOCK ELEMENTS ──
+                        case 'p':
+                            if (inner.trim()) result += `\n\n${inner.trim()}\n\n`;
+                            break;
+                        case 'div':
+                            // Kiểm tra xem div có chứa block-level content không
+                            if (inner.trim()) result += `\n${inner.trim()}\n`;
+                            break;
+                        case 'br':
+                            result += '  \n';
+                            break;
+                        case 'hr':
+                            result += '\n\n---\n\n';
+                            break;
+                        case 'blockquote':
+                            if (inner.trim()) {
+                                const quoted = inner.trim().split('\n').map(l => `> ${l}`).join('\n');
+                                result += `\n\n${quoted}\n\n`;
+                            }
+                            break;
+
+                        // ── CODE BLOCK (pre) ──
+                        case 'pre':
+                            const lang = detectLang(child);
+                            // Lấy textContent trực tiếp (không qua walk) để giữ nguyên format code
+                            const codeContent = child.textContent.trim();
+                            result += `\n\n\`\`\`${lang}\n${codeContent}\n\`\`\`\n\n`;
+                            break;
+
+                        // ── DEFINITION LIST ──
+                        case 'dl':
+                            result += `\n${inner}\n`;
+                            break;
+                        case 'dt':
+                            if (inner.trim()) result += `\n**${inner.trim()}**\n`;
+                            break;
+                        case 'dd':
+                            if (inner.trim()) result += `: ${inner.trim()}\n`;
+                            break;
+
+                        // ── DETAILS / SUMMARY ──
+                        case 'details':
+                            result += `\n\n<details>\n${inner}\n</details>\n\n`;
+                            break;
+                        case 'summary':
+                            result += `<summary>${inner.trim()}</summary>\n\n`;
+                            break;
+
+                        // ── BADGE (VuePress / Docusaurus) ──
+                        case 'span':
+                            if (child.classList.contains('badge')) {
+                                // Format badge nổi bật
+                                result += ` \`${inner.trim()}\` `;
+                            } else {
+                                result += inner;
+                            }
+                            break;
+
+                        // ── FIGURE / FIGCAPTION ──
+                        case 'figure':
+                            result += `\n\n${inner.trim()}\n\n`;
+                            break;
+                        case 'figcaption':
+                            result += `\n*${inner.trim()}*\n`;
+                            break;
+
+                        // ── SECTION / ARTICLE / MAIN / ASIDE / NAV / HEADER / FOOTER ──
+                        case 'section': case 'article': case 'main': case 'aside':
+                        case 'header': case 'footer': case 'nav':
+                            result += inner;
+                            break;
+
+                        // ── DEFAULT: pass-through ──
+                        default:
+                            result += inner;
                     }
                 });
                 return result;
@@ -230,21 +564,157 @@
 
             let md = walk(doc.body);
 
-            // POST-PROCESSING
+            // ── POST-PROCESSING: Dọn dẹp output cho đẹp ──
             let lines = md.split('\n');
             lines = lines.map(line => {
-                // Giữ indent cho list
-                if (line.match(/^\s*(-|\d+\.)/)) return line; 
+                // Giữ indent cho list items
+                if (line.match(/^\s*(-|\d+\.)\s/)) return line;
                 // Giữ nguyên dòng Table (bắt đầu bằng |)
                 if (line.trim().startsWith('|')) return line.trim();
-                return line.trim();
+                // Giữ nguyên dòng blockquote
+                if (line.trim().startsWith('>')) return line.trim();
+                // Giữ nguyên dòng code fence
+                if (line.trim().startsWith('```')) return line.trim();
+                // Giữ nguyên nội dung code block (sẽ được xử lý sau)
+                return line.trimEnd();
             });
 
             md = lines.join('\n');
-            md = md.replace(/\n{3,}/g, '\n\n'); 
+
+            // Chuẩn hóa khoảng trống: tối đa 2 dòng trống liên tiếp
+            md = md.replace(/\n{3,}/g, '\n\n');
+
+            // Đảm bảo heading luôn có 1 dòng trống phía trước
+            md = md.replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2');
+
+            // Đảm bảo code block có 1 dòng trống trước và sau
+            md = md.replace(/([^\n])\n```/g, '$1\n\n```');
+            md = md.replace(/```\n([^\n])/g, '```\n\n$1');
+
+            // Xóa trailing whitespace trên mỗi dòng (trừ line break markdown "  \n")
+            md = md.replace(/[ \t]+$/gm, '');
+
             return md.trim();
+        }
+
+        // ============================================================
+        // === ENGINE LÀM ĐẸP MARKDOWN (Beautify) ===
+        // ============================================================
+        function beautifyMarkdown(md) {
+            if (!md || !md.trim()) return '';
+
+            let lines = md.split('\n');
+            let result = [];
+            let inCodeBlock = false;
+            let codeBlockLang = '';
+            let codeBlockContent = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+
+                // ── Detect code block fence (```) ──
+                const fenceMatch = line.match(/^\s*(`{3,})(\w*)\s*$/);
+                if (fenceMatch) {
+                    if (!inCodeBlock) {
+                        // Mở code block
+                        inCodeBlock = true;
+                        codeBlockLang = fenceMatch[2] || '';
+                        codeBlockContent = [];
+                    } else {
+                        // Đóng code block → flush nội dung
+                        result.push('```' + codeBlockLang);
+                        result.push(...codeBlockContent);
+                        result.push('```');
+                        inCodeBlock = false;
+                        codeBlockLang = '';
+                        codeBlockContent = [];
+                    }
+                    continue;
+                }
+
+                // Nếu đang trong code block → giữ nguyên nội dung, KHÔNG xử lý
+                if (inCodeBlock) {
+                    codeBlockContent.push(line);
+                    continue;
+                }
+
+                // ── Xóa các dòng chỉ chứa 1 số (dãy số thứ tự dòng code bị rò rỉ) ──
+                if (line.match(/^\s*\d+\s*$/)) {
+                    // Kiểm tra xem đây có phải là phần của dãy số liên tiếp không
+                    let isSequence = false;
+                    const num = parseInt(line.trim());
+
+                    // Nhìn lên trên: dòng trước đó cũng là số, hoặc là code fence / dòng trống
+                    if (i > 0) {
+                        const prevLine = lines[i - 1].trim();
+                        if (prevLine.match(/^\d+$/) || prevLine.match(/^`{3}/) || prevLine === '') {
+                            isSequence = true;
+                        }
+                    }
+                    // Nhìn xuống dưới: dòng tiếp theo cũng là số
+                    if (i < lines.length - 1) {
+                        const nextLine = lines[i + 1].trim();
+                        if (nextLine.match(/^\d+$/)) {
+                            isSequence = true;
+                        }
+                    }
+                    // Số 1 đứng một mình mà phía dưới là 2 → chắc chắn là dãy số
+                    if (num === 1 && i < lines.length - 1 && lines[i + 1].trim() === '2') {
+                        isSequence = true;
+                    }
+
+                    if (isSequence) {
+                        continue; // Bỏ qua dòng số thứ tự
+                    }
+                }
+
+                // Giữ nguyên dòng (sẽ xử lý tiếp ở post-processing)
+                result.push(line);
+            }
+
+            // Nếu code block chưa đóng (thiếu ```) → flush
+            if (inCodeBlock) {
+                result.push('```' + codeBlockLang);
+                result.push(...codeBlockContent);
+                result.push('```');
+            }
+
+            // ── POST-PROCESSING ──
+            let output = result.join('\n');
+
+            // Chuẩn hóa: tối đa 2 dòng trống liên tiếp
+            output = output.replace(/\n{3,}/g, '\n\n');
+
+            // Đảm bảo heading có 1 dòng trống phía trước (nếu chưa có)
+            output = output.replace(/([^\n])\n(#{1,6}\s)/g, '$1\n\n$2');
+
+            // Đảm bảo heading có 1 dòng trống phía sau
+            output = output.replace(/(#{1,6}\s.+)\n([^\n#>|\-\d`])/g, '$1\n\n$2');
+
+            // Đảm bảo code block có 1 dòng trống trước
+            output = output.replace(/([^\n])\n```/g, '$1\n\n```');
+
+            // Đảm bảo code block có 1 dòng trống sau (nhưng không phải giữa ``` và nội dung)
+            output = output.replace(/```\n\n*([^`\n])/g, function (match, p1) {
+                // Chỉ thêm dòng trống sau ``` đóng (không phải ``` mở)
+                return '```\n\n' + p1;
+            });
+
+            // Xóa dòng trống thừa giữa ``` mở và nội dung code
+            output = output.replace(/(```\w*)\n\n+/g, '$1\n');
+
+            // Xóa dòng trống thừa giữa nội dung code và ``` đóng  
+            output = output.replace(/\n\n+```/g, '\n```');
+
+            // Xóa trailing whitespace
+            output = output.replace(/[ \t]+$/gm, '');
+
+            // Chuẩn hóa lần cuối
+            output = output.replace(/\n{3,}/g, '\n\n');
+
+            return output.trim();
         }
     </script>
 </body>
-</html>
 
+</html>
